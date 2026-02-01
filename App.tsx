@@ -51,26 +51,19 @@ try {
   ModulesScreen =
     require("./src/screens/admin/ModulesScreen").default ||
     require("./src/screens/admin/ModulesScreen");
-} catch (e) {
-  
-}
+} catch (e) {}
 let LessonsScreen: any;
 try {
   LessonsScreen =
     require("./src/screens/admin/LessonsScreen").default ||
     require("./src/screens/admin/LessonsScreen");
-} catch (e) {
-  
-}
+} catch (e) {}
 
 let QuizManagementScreen: any;
 try {
   QuizManagementScreen =
     require("./src/screens/admin/QuizManagementScreen").QuizManagementScreen;
-} catch (e) {
-  
-  
-}
+} catch (e) {}
 import AdminCoursesScreen from "./src/screens/admin/AdminCoursesScreen";
 import AdminCategoriesScreen from "./src/screens/admin/AdminCategoriesScreen";
 import AdminReportsScreen from "./src/screens/admin/AdminReportsScreen";
@@ -79,13 +72,10 @@ import InstructorMaterialsScreen from "./src/screens/instructor/InstructorMateri
 
 let TeamScreen: any;
 try {
-  
   TeamScreen =
     require("./src/screens/main/TeamScreen").default ||
     require("./src/screens/main/TeamScreen");
 } catch (e) {
-  
-  
   TeamScreen = require("./src/screens/main/TeamScreen");
 }
 
@@ -152,11 +142,9 @@ function StatusBarWrapper() {
   const { theme, colors } = useTheme();
   const [, forceUpdate] = useState(0);
 
-  
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
-        
         forceUpdate((prev) => prev + 1);
       }
     });
@@ -172,7 +160,6 @@ function StatusBarWrapper() {
 function extractLabel(value: any): string {
   if (value === null || typeof value === "undefined") return "";
   if (typeof value === "string") {
-    
     try {
       return decodeURIComponent(value);
     } catch (e) {
@@ -180,13 +167,12 @@ function extractLabel(value: any): string {
     }
   }
   if (typeof value === "object") {
-    
     if (value.titulo) return String(value.titulo);
     if (value.title) return String(value.title);
     if (value.nombre) return String(value.nombre);
     if (value.name) return String(value.name);
     if (value.label) return String(value.label);
-    
+
     try {
       return JSON.stringify(value).slice(0, 80);
     } catch (e) {
@@ -200,7 +186,6 @@ function getHeaderTitle(
   routeName: string,
   webRoute?: { name: string; params?: any } | null,
 ): string {
-  
   if (webRoute) {
     if (
       process.env.NODE_ENV !== "production" &&
@@ -221,7 +206,6 @@ function getHeaderTitle(
       case "LessonDetail":
         return "Detalle de la Lección";
       case "QuizManagement":
-        
         return extractLabel(webRoute.params?.contentTitle) || "Gestión de Quiz";
       case "AdminCategories":
         return "Gestión de Categorías";
@@ -230,7 +214,6 @@ function getHeaderTitle(
     }
   }
 
-  
   switch (routeName) {
     case "Dashboard":
       return "Dashboard";
@@ -347,7 +330,7 @@ function getHeaderSubtitle(
 function UserMenu() {
   const { logout, state, isAdmin, isInstructor } = useAuth();
   const showAdmin = isAdmin || isInstructor;
-  const { theme, colors, profileImage } = useTheme(); 
+  const { theme, colors, profileImage } = useTheme();
   const navigation = useNavigation<any>();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -362,7 +345,6 @@ function UserMenu() {
     try {
       await logout();
     } catch (error) {
-      
       if (Platform.OS === "web") {
         window.alert("Error al cerrar sesión. Por favor, intenta de nuevo.");
       } else {
@@ -370,9 +352,6 @@ function UserMenu() {
       }
     }
   };
-
-  
-  
 
   const menuItems = [
     {
@@ -563,7 +542,7 @@ function UserMenu() {
 
 function MobileTabNavigator({ navigation }: any) {
   const { logout, state, isAdmin } = useAuth();
-  const { theme, colors, profileImage } = useTheme(); 
+  const { theme, colors, profileImage } = useTheme();
   const showAdmin = isAdmin;
 
   const handleLogout = async () => {
@@ -576,15 +555,12 @@ function MobileTabNavigator({ navigation }: any) {
           try {
             await logout();
           } catch (error) {
-            
             Alert.alert("Error", "No se pudo cerrar sesión. Intenta de nuevo.");
           }
         },
       },
     ]);
   };
-
-  
 
   return (
     <>
@@ -601,7 +577,7 @@ function MobileTabNavigator({ navigation }: any) {
             paddingBottom: 8,
             paddingTop: 8,
           },
-          
+
           headerShown: false,
           headerStyle: {
             backgroundColor: colors.primary,
@@ -610,7 +586,7 @@ function MobileTabNavigator({ navigation }: any) {
           headerTitleStyle: {
             fontWeight: "bold",
           },
-          
+
           headerRight: () => (
             <View style={styles.headerRightContainer}>
               {}
@@ -764,20 +740,18 @@ function MobileTabNavigator({ navigation }: any) {
 
 function WebSidebarNavigator() {
   const [activeTab, setActiveTab] = useState("Dashboard");
-  
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const { state, isAdmin } = useAuth();
   const roleLower = (state.user?.role || "").toLowerCase();
   const isInstructor = roleLower === "instructor";
   const isEmployee = roleLower === "empleado" || roleLower === "employee";
-  const { theme, colors, profileImage } = useTheme(); 
+  const { theme, colors, profileImage } = useTheme();
   const { width } = useWindowDimensions();
   const isMobileWeb = width < 768;
   const navigation = useNavigation<any>();
 
-  
-  
   let headerObj: any = { header: null };
   try {
     const hc = require("./src/context/HeaderContext");
@@ -787,19 +761,15 @@ function WebSidebarNavigator() {
   }
   const { header } = headerObj;
 
-  
   const [webRoute, setWebRoute] = useState<{
     name: string;
     params?: any;
   } | null>(null);
 
-  
-  
   const alwaysShowBackTabs = useMemo(() => new Set<string>([]), []);
   const neverShowBackTabs = useMemo(() => new Set(["Dashboard"]), []);
   const shouldShowBack = useMemo(() => {
     try {
-      
       const mainScreens = [
         "Dashboard",
         "Categories",
@@ -811,26 +781,16 @@ function WebSidebarNavigator() {
       ];
       const isMainScreen = mainScreens.includes(activeTab);
 
-      
-      
       if (webRoute) {
         return true;
       }
 
-      
       if (!isSidebarOpen) return !neverShowBackTabs.has(activeTab);
 
-      
       if (alwaysShowBackTabs.has(activeTab)) return true;
 
-      
       if (isMainScreen) return false;
 
-      
-      
-      
-      
-      
       const hasHistoryNav = (() => {
         try {
           return navigation.canGoBack();
@@ -869,40 +829,29 @@ function WebSidebarNavigator() {
         (routeObj && !routeIsTopLevel),
       );
 
-      
       if (process.env.NODE_ENV !== "production") {
         try {
-        } catch (e) {
-          
-        }
+        } catch (e) {}
       }
 
-      
       return effectiveHasHistory;
     } catch (e) {
-      
       return !isSidebarOpen;
     }
   }, [isSidebarOpen, width, activeTab, navigation, webRoute]);
 
-  
   React.useEffect(() => {
     if (process.env.NODE_ENV !== "production") {
       try {
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     }
   }, [shouldShowBack, isSidebarOpen]);
 
-  
   React.useEffect(() => {
     try {
       const title = getHeaderTitle(activeTab, webRoute);
       const subtitle = getHeaderSubtitle(activeTab, webRoute, state.user?.role);
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }, [
     activeTab,
     webRoute,
@@ -912,30 +861,24 @@ function WebSidebarNavigator() {
     width,
   ]);
 
-  
   React.useEffect(() => {
     if (process.env.NODE_ENV !== "production") {
     }
   }, [header, webRoute]);
 
-  
   React.useEffect(() => {
     if (Platform.OS === "web") {
       try {
-        
         const el = document.getElementById("main-content");
         if (el && typeof el.scrollIntoView === "function") {
           el.scrollIntoView({ behavior: "smooth", block: "start" });
         } else if (typeof window !== "undefined") {
           window.scrollTo({ top: 0, behavior: "smooth" } as any);
         }
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     }
   }, [activeTab]);
 
-  
   React.useEffect(() => {
     const SHOULD_OPEN = width >= 900;
     if (SHOULD_OPEN && !isSidebarOpen) setIsSidebarOpen(true);
@@ -948,7 +891,6 @@ function WebSidebarNavigator() {
 
   const showAdmin = isAdmin;
 
-  
   const lastActiveTabRef = React.useRef<string | undefined>(undefined);
   React.useEffect(() => {
     if (Platform.OS === "web") {
@@ -959,13 +901,11 @@ function WebSidebarNavigator() {
           activeTab.startsWith("Admin");
         const becameAdminTab =
           isAdminTab && lastActiveTabRef.current !== activeTab;
-        
+
         if (becameAdminTab && width < 900 && isSidebarOpen) {
           setIsSidebarOpen(false);
         }
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     }
     lastActiveTabRef.current = activeTab as string | undefined;
   }, [activeTab, width, isSidebarOpen]);
@@ -987,8 +927,7 @@ function WebSidebarNavigator() {
             icon: "shield-checkmark",
           },
           { key: "Team", label: "Mi Equipo", icon: "people" },
-          
-          
+
           ...(Platform.OS === "web"
             ? []
             : [{ key: "AdminUsers", label: "Usuarios", icon: "person" }]),
@@ -997,18 +936,13 @@ function WebSidebarNavigator() {
     return { main, instructor: instructorGroup, admin };
   }, [isAdmin, showAdmin, isInstructor]);
 
-  
   React.useEffect(() => {
     if (process.env.NODE_ENV !== "production") {
       try {
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     }
   }, [isAdmin, showAdmin, sidebarItems.admin.length, webRoute]);
 
-  
-  
   const lastActiveTabForClearRef = React.useRef<string | undefined>(undefined);
   React.useEffect(() => {
     try {
@@ -1019,25 +953,17 @@ function WebSidebarNavigator() {
         try {
           const { clearWebRoute } = require("./src/utils/webNav");
           clearWebRoute();
-        } catch (_) {
-          
-        }
+        } catch (_) {}
         setWebRoute(null);
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
     lastActiveTabForClearRef.current = activeTab as string | undefined;
   }, [activeTab, webRoute]);
 
-  
-  
-  
   React.useEffect(() => {
     if (Platform.OS !== "web") return;
     try {
       if (header && header.manual) {
-        
         if (webRoute && webRoute.name === "LessonDetail") {
           const newParams = {
             ...(webRoute.params || {}),
@@ -1050,13 +976,9 @@ function WebSidebarNavigator() {
             );
           }
         } else {
-          
         }
       }
-      
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }, [header, webRoute]);
 
   const renderContent = useMemo(() => {
@@ -1123,7 +1045,6 @@ function WebSidebarNavigator() {
           require("./src/screens/admin/ModulesScreen").default ||
           require("./src/screens/admin/ModulesScreen");
         if (!Comp) {
-          
           return null;
         }
         return <Comp courseId={webRoute.params?.courseId} />;
@@ -1136,7 +1057,6 @@ function WebSidebarNavigator() {
             .QuizManagementScreen ||
           require("./src/screens/admin/QuizManagementScreen");
         if (!Comp) {
-          
           return null;
         }
         return (
@@ -1148,13 +1068,11 @@ function WebSidebarNavigator() {
       }
 
       if (webRoute.name === "Lessons") {
-        
         const Comp =
           LessonsScreen ||
           require("./src/screens/admin/LessonsScreen").default ||
           require("./src/screens/admin/LessonsScreen");
         if (!Comp) {
-          
           return null;
         }
         return (
@@ -1165,7 +1083,6 @@ function WebSidebarNavigator() {
         );
       }
 
-      
       if (contentMap[webRoute.name]) {
         const Comp = contentMap[webRoute.name];
         return <Comp {...(webRoute.params || {})} />;
@@ -1176,31 +1093,24 @@ function WebSidebarNavigator() {
     return <Component adminMode={activeTab.startsWith("Admin")} />;
   }, [activeTab, webRoute]);
 
-  
   React.useEffect(() => {
     const webNav = require("./src/utils/webNav");
     const unsubTab = webNav.onWebTabChange((tab: string, params?: any) => {
       if (params && params.initialCategory && tab === "Categories") {
-        
       }
       setActiveTab(tab);
     });
     const unsubRoute = webNav.onWebRouteChange((route: any | null) => {
       try {
-        
-      } catch (e) {
-        
-      }
+      } catch (e) {}
       try {
         setWebRoute((prev) => {
-          
           const prevJson = prev ? JSON.stringify(prev) : null;
           const newJson = route ? JSON.stringify(route) : null;
           if (prevJson === newJson) {
-            
             return prev;
           }
-          
+
           return route;
         });
       } catch (e) {
@@ -1208,14 +1118,12 @@ function WebSidebarNavigator() {
       }
     });
 
-    
     try {
       if (Platform.OS === "web" && typeof window !== "undefined") {
         const url = new URL(window.location.href);
         const pathname = url.pathname || "";
         const params = Object.fromEntries(url.searchParams.entries());
 
-        
         const p = pathname.replace(/\/+$/, "").toLowerCase();
 
         if (p.endsWith("/lessondetail") || p.includes("/lessondetail")) {
@@ -1248,9 +1156,7 @@ function WebSidebarNavigator() {
           });
         }
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
 
     return () => {
       unsubTab();
@@ -1411,13 +1317,10 @@ function WebSidebarNavigator() {
                     ],
                   ]}
                   onPress={() => {
-                    
                     try {
                       const { clearWebRoute } = require("./src/utils/webNav");
                       clearWebRoute();
-                    } catch (e) {
-                      
-                    }
+                    } catch (e) {}
                     setWebRoute(null);
                     setActiveTab(item.key);
                   }}
@@ -1510,9 +1413,7 @@ function WebSidebarNavigator() {
                             clearWebRoute,
                           } = require("./src/utils/webNav");
                           clearWebRoute();
-                        } catch (e) {
-                          
-                        }
+                        } catch (e) {}
                         setWebRoute(null);
                         setActiveTab(item.key);
                       }}
@@ -1609,9 +1510,7 @@ function WebSidebarNavigator() {
                             clearWebRoute,
                           } = require("./src/utils/webNav");
                           clearWebRoute();
-                        } catch (e) {
-                          
-                        }
+                        } catch (e) {}
                         setWebRoute(null);
                         setActiveTab(item.key);
                       }}
@@ -1722,16 +1621,12 @@ function WebSidebarNavigator() {
                 <TouchableOpacity
                   onPress={() => {
                     try {
-                      
-
-                      
                       if (webRoute) {
                         const {
                           goBackWebRoute,
                         } = require("./src/utils/webNav");
                         const didGoBack = goBackWebRoute();
-                        
-                        
+
                         return;
                       }
 
@@ -1748,9 +1643,7 @@ function WebSidebarNavigator() {
                       if (navCanGoBack) {
                         try {
                           navigation.goBack();
-                        } catch (e) {
-                          
-                        }
+                        } catch (e) {}
                       } else if (Platform.OS === "web") {
                         const { goToWebTab } = require("./src/utils/webNav");
                         goToWebTab("Dashboard");
@@ -1761,9 +1654,7 @@ function WebSidebarNavigator() {
                         ) {
                           try {
                             navigation.navigate("Dashboard");
-                          } catch (e) {
-                            
-                          }
+                          } catch (e) {}
                         }
                       }
                     } catch (err) {
@@ -1774,9 +1665,7 @@ function WebSidebarNavigator() {
                         } else {
                           navigation.navigate("Dashboard");
                         }
-                      } catch (_) {
-                        
-                      }
+                      } catch (_) {}
                     }
                   }}
                   accessibilityRole="button"
@@ -1934,17 +1823,15 @@ function SplashScreen() {
 function AppContent() {
   const [appIsReady, setAppIsReady] = useState(false);
   const [processingRecovery, setProcessingRecovery] = useState(false);
-  
-  
+
   const [isRecoverySession, setIsRecoverySession] = useState(() => {
     if (Platform.OS === "web" && typeof window !== "undefined") {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
 
-      const hasTokens = hash.includes("access_token"); 
+      const hasTokens = hash.includes("access_token");
       const isResetPath = pathname.includes("reset-password");
 
-      
       const storedFlag =
         window.localStorage.getItem("recovery_session") === "1";
       return hasTokens || isResetPath || storedFlag;
@@ -1956,7 +1843,6 @@ function AppContent() {
   const { theme, colors, fontSize, getFontSize } = useTheme();
   const isWeb = Platform.OS === "web";
 
-  
   React.useEffect(() => {
     try {
       const defaultProps = (Text as any).defaultProps || {};
@@ -1965,30 +1851,23 @@ function AppContent() {
         fontSize: getFontSize(14),
       };
       (Text as any).defaultProps = defaultProps;
-    } catch (err) {
-      
-    }
+    } catch (err) {}
   }, [fontSize, getFontSize]);
 
-  
   React.useEffect(() => {
     try {
       (Ionicons as any).loadFont && (Ionicons as any).loadFont();
-    } catch (err) {
-      
-    }
+    } catch (err) {}
   }, []);
-  
-  
+
   const { navigationRef } = require("./src/services/navigationService");
-  
+
   const {
     HeaderProvider,
     HeaderRenderer,
     useHeader,
   } = require("./src/context/HeaderContext");
 
-  
   const navigationTheme = {
     ...DefaultTheme,
     dark: theme.dark,
@@ -1996,7 +1875,7 @@ function AppContent() {
       ...DefaultTheme.colors,
       primary: colors.primary,
       background: theme.colors.background,
-      
+
       card: colors.card || theme.colors.card || "#ffffff",
       text: theme.colors.text,
       border: theme.dark ? "#444" : "#e0e0e0",
@@ -2004,13 +1883,9 @@ function AppContent() {
     },
   };
 
-  
-  
-
-  
   function HeaderStateListener() {
     const { header, setHeader } = useHeader();
-    
+
     const headerRef = React.useRef(header);
     React.useEffect(() => {
       headerRef.current = header;
@@ -2020,7 +1895,6 @@ function AppContent() {
       let cleanupUnsub: any = null;
       const handler = () => {
         try {
-          
           let routeName = "Dashboard";
           try {
             let stateObj = navigationRef.current?.getRootState
@@ -2031,7 +1905,7 @@ function AppContent() {
               while (st && st.routes && st.index != null) {
                 const r = st.routes[st.index];
                 if (!r) break;
-                
+
                 if (r.state) {
                   st = r.state as any;
                   continue;
@@ -2046,21 +1920,19 @@ function AppContent() {
               routeName = current?.name || "Dashboard";
             }
           } catch (err) {
-            
             const current = navigationRef.current?.getCurrentRoute
               ? navigationRef.current.getCurrentRoute()
               : null;
             routeName = current?.name || "Dashboard";
           }
 
-          
           const title = getHeaderTitle(routeName, null);
-          
+
           const subtitle =
             routeName === "MyCourses"
               ? "Tus cursos inscritos"
               : getHeaderSubtitle(routeName, null, state.user?.role);
-          
+
           const primaryScreens = new Set([
             "Dashboard",
             "AdminDashboard",
@@ -2075,7 +1947,7 @@ function AppContent() {
             "Profile",
             "Settings",
           ]);
-          
+
           const canGoBack =
             navigationRef.current &&
             typeof navigationRef.current.canGoBack === "function"
@@ -2086,13 +1958,10 @@ function AppContent() {
               ? canGoBack || !primaryScreens.has(routeName)
               : undefined;
 
-          
-          
           if (Platform.OS !== "web" && routeName === "MyCourses") {
             computedShowBack = true;
           }
 
-          
           if (
             Platform.OS !== "web" &&
             (routeName === "Categories" ||
@@ -2102,8 +1971,6 @@ function AppContent() {
             computedShowBack = false;
           }
 
-          
-          
           const authRoutes = new Set([
             "Login",
             "Register",
@@ -2116,8 +1983,6 @@ function AppContent() {
           }
 
           if (routeName === "CourseDetail") {
-            
-            
             setHeader({
               title: "Detalle del Curso",
               subtitle: "Información y contenido del curso",
@@ -2128,7 +1993,6 @@ function AppContent() {
             return;
           }
 
-          
           if (
             [
               "LessonDetail",
@@ -2138,8 +2002,6 @@ function AppContent() {
               "MyCourses",
             ].includes(routeName)
           ) {
-            
-            
             const initialTitles: Record<string, string> = {
               LessonDetail: "Detalle de la Lección",
               ProfileSettings: "Mi Perfil",
@@ -2165,12 +2027,6 @@ function AppContent() {
             return;
           }
 
-          
-          
-          
-          
-          
-          
           const isPrimaryTopLevelOnMobile =
             Platform.OS !== "web" &&
             [
@@ -2188,7 +2044,7 @@ function AppContent() {
               "Settings",
               "MyCourses",
             ].includes(routeName);
-          
+
           if (
             headerRef.current &&
             headerRef.current.manual &&
@@ -2196,14 +2052,9 @@ function AppContent() {
           ) {
             if (process.env.NODE_ENV !== "production") {
             }
-            return; 
+            return;
           }
 
-          
-          
-          
-          
-          
           const curH = headerRef.current;
           if (
             curH &&
@@ -2217,7 +2068,6 @@ function AppContent() {
             return;
           }
 
-          
           let finalShowBack = computedShowBack;
           let finalOnBack: any = undefined;
           if (
@@ -2232,7 +2082,7 @@ function AppContent() {
             if (process.env.NODE_ENV !== "production") {
             }
           }
-          
+
           if (
             Platform.OS !== "web" &&
             (routeName === "Categories" || routeName === "Certificates")
@@ -2243,35 +2093,29 @@ function AppContent() {
           if (process.env.NODE_ENV !== "production") {
           }
 
-          
           if (Platform.OS === "web" && routeName === "Dashboard") {
             setHeader({ hidden: true, manual: true });
             return;
           }
 
-          
           const shouldAlignLeft = Platform.OS !== "web";
 
-          
           setHeader({
             title,
             subtitle,
             showBack: finalShowBack,
             onBack: finalOnBack,
             auto: true,
-            alignLeftOnMobile: shouldAlignLeft, 
+            alignLeftOnMobile: shouldAlignLeft,
           } as any);
-        } catch (e) {
-          
-        }
+        } catch (e) {}
       };
 
-      
       try {
         const unsub = navigationRef.current?.addListener
           ? navigationRef.current.addListener("state", handler)
           : null;
-        
+
         handler();
         return () => {
           if (unsub) unsub();
@@ -2280,9 +2124,8 @@ function AppContent() {
         const iv = setInterval(() => {
           try {
             if (navigationRef.current) {
-              
               handler();
-              
+
               if (navigationRef.current.addListener) {
                 try {
                   const unsubLater = navigationRef.current.addListener(
@@ -2290,12 +2133,9 @@ function AppContent() {
                     handler,
                   );
                   clearInterval(iv);
-                  
-                  
+
                   (cleanupUnsub as any) = unsubLater;
-                } catch (inner) {
-                  
-                }
+                } catch (inner) {}
               }
             }
           } catch (_) {}
@@ -2311,11 +2151,9 @@ function AppContent() {
     return null;
   }
 
-  
   useEffect(() => {
     if (Platform.OS === "web") {
       const processRecoveryTokens = async () => {
-        
         try {
           let styleEl = document.getElementById(
             "theme-selection-style",
@@ -2329,13 +2167,10 @@ function AppContent() {
             document.head.appendChild(styleEl);
           }
           styleEl.innerHTML = css;
-        } catch (e) {
-          
-        }
+        } catch (e) {}
         const hash = window.location.hash;
         const pathname = window.location.pathname;
 
-        
         if (hash.includes("access_token") && hash.includes("refresh_token")) {
           setProcessingRecovery(true);
 
@@ -2345,7 +2180,6 @@ function AppContent() {
             const refreshToken = hashParams.get("refresh_token") || "";
 
             if (accessToken && refreshToken) {
-              
               setIsRecoverySession(true);
               const { data, error } = await supabase.auth.setSession({
                 access_token: accessToken,
@@ -2353,8 +2187,6 @@ function AppContent() {
               });
 
               if (error) {
-                
-                
                 setIsRecoverySession(false);
                 try {
                   if (typeof window !== "undefined")
@@ -2365,11 +2197,9 @@ function AppContent() {
                   "No se pudo validar el enlace de recuperación.",
                 );
               } else {
-                
               }
             }
           } catch (error) {
-            
           } finally {
             setProcessingRecovery(false);
           }
@@ -2381,17 +2211,12 @@ function AppContent() {
     }
   }, []);
 
-  
-  
-
-  
   useEffect(() => {
     const handleDeepLink = async (event: { url: string }) => {
       const url = event.url;
-      
+
       if (url.includes("reset-password") || url.includes("type=recovery")) {
         try {
-          
           let error = "";
           let errorCode = "";
           let errorDescription = "";
@@ -2402,8 +2227,6 @@ function AppContent() {
             errorCode = urlObj.searchParams.get("error_code") || "";
             errorDescription =
               urlObj.searchParams.get("error_description") || "";
-
-            
 
             if (errorCode === "otp_expired" || error === "access_denied") {
               Alert.alert(
@@ -2425,7 +2248,6 @@ function AppContent() {
           let refreshToken = "";
           let type = "";
 
-          
           if (url.includes("#")) {
             const hashPart = url.split("#")[1] || "";
             const hashParams = new URLSearchParams(hashPart);
@@ -2434,18 +2256,14 @@ function AppContent() {
             type = hashParams.get("type") || "";
           }
 
-          
           let code = "";
 
-          
           if (url.includes("?")) {
             const queryPart = url.split("?")[1] || "";
             const queryParams = new URLSearchParams(queryPart.split("#")[0]);
 
-            
             code = queryParams.get("code") || "";
 
-            
             if (!code) {
               accessToken = queryParams.get("access_token") || "";
               refreshToken = queryParams.get("refresh_token") || "";
@@ -2453,16 +2271,13 @@ function AppContent() {
 
             type = queryParams.get("type") || "";
           }
-          
+
           if (code) {
-            
             setIsRecoverySession(true);
             const { data, error } =
               await supabase.auth.exchangeCodeForSession(code);
 
             if (error) {
-              
-              
               setIsRecoverySession(false);
               try {
                 if (typeof window !== "undefined")
@@ -2473,24 +2288,19 @@ function AppContent() {
                 "No se pudo validar el enlace de recuperación.",
               );
             } else {
-              
-              
               setTimeout(() => {
                 navigationRef.current?.navigate("ResetPassword");
               }, 200);
             }
           } else if (accessToken && refreshToken) {
-            
             setIsRecoverySession(true);
-            
+
             const { data, error } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken,
             });
 
             if (error) {
-              
-              
               setIsRecoverySession(false);
               try {
                 if (typeof window !== "undefined")
@@ -2501,17 +2311,13 @@ function AppContent() {
                 "No se pudo validar el enlace de recuperación.",
               );
             } else {
-              
-              
               setTimeout(() => {
                 navigationRef.current?.navigate("ResetPassword");
               }, 200);
             }
           } else {
-            
           }
         } catch (error) {
-          
           Alert.alert(
             "Error",
             "Hubo un problema al abrir el enlace de recuperación.",
@@ -2520,11 +2326,9 @@ function AppContent() {
       }
     };
 
-    
     if (Platform.OS !== "web") {
       const subscription = Linking.addEventListener("url", handleDeepLink);
 
-      
       Linking.getInitialURL().then((url) => {
         if (url) {
           handleDeepLink({ url });
@@ -2544,7 +2348,6 @@ function AppContent() {
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setAppIsReady(true);
       } catch (error) {
-        
         setAppIsReady(true);
       }
     };
@@ -2556,7 +2359,6 @@ function AppContent() {
     };
   }, []);
 
-  
   useEffect(() => {
     if (
       appIsReady &&
@@ -2564,7 +2366,6 @@ function AppContent() {
       !state.isAuthenticated &&
       navigationRef.current
     ) {
-      
       const currentRoute = navigationRef.current.getCurrentRoute();
       if (
         currentRoute?.name === "ResetPassword" ||
@@ -2572,8 +2373,7 @@ function AppContent() {
       ) {
         return;
       }
-      
-      
+
       try {
         if (typeof window !== "undefined")
           window.localStorage.removeItem("recovery_session");
@@ -2583,7 +2383,6 @@ function AppContent() {
         setIsRecoverySession(false);
       }
 
-      
       try {
         if (
           navigationRef.current &&
@@ -2597,17 +2396,9 @@ function AppContent() {
           });
         } else {
         }
-        
-        
-        
-        
-      } catch (error) {
-        
-      }
+      } catch (error) {}
     }
 
-    
-    
     const recoveryFlag =
       Platform.OS === "web" && typeof window !== "undefined"
         ? window.localStorage.getItem("recovery_session") === "1"
@@ -2620,12 +2411,11 @@ function AppContent() {
       !isRecoverySession &&
       !recoveryFlag
     ) {
-      
       if (Platform.OS === "web") {
         try {
           const pathname =
             typeof window !== "undefined" ? window.location.pathname : "";
-          
+
           if (
             pathname &&
             (pathname.includes("/courses") ||
@@ -2639,21 +2429,16 @@ function AppContent() {
                 index: 0,
                 routes: [{ name: "MainTabs" }],
               });
-            } catch (error) {
-              
-            }
+            } catch (error) {}
           }
         } catch (err) {
-          
           try {
             navigationRef.current.reset({
               index: 0,
               routes: [{ name: "MainTabs" }],
             });
           } catch (error) {
-            :",
-              error,
-            );
+            // Error handling ignored
           }
         }
       } else {
@@ -2662,9 +2447,7 @@ function AppContent() {
             index: 0,
             routes: [{ name: "MainTabs" }],
           });
-        } catch (error) {
-          
-        }
+        } catch (error) {}
       }
     } else if (
       appIsReady &&
@@ -2672,17 +2455,13 @@ function AppContent() {
       state.isAuthenticated &&
       (isRecoverySession || recoveryFlag)
     ) {
-      
       try {
         if (navigationRef.current) {
-          
           setTimeout(() => {
             navigationRef.current?.navigate("ResetPassword");
           }, 100);
         }
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     }
   }, [state.isAuthenticated, state.loading, appIsReady, isRecoverySession]);
   if (!appIsReady) {
@@ -2696,7 +2475,7 @@ function AppContent() {
   if (state.loading) {
     return <SplashScreen />;
   }
-  
+
   const linking = {
     prefixes: [
       "https://appdemo.vercel.app",
@@ -2752,9 +2531,9 @@ function AppContent() {
                 initialRouteName={state.isAuthenticated ? "MainTabs" : "Login"}
                 screenOptions={{
                   headerStyle: {
-                    backgroundColor: colors.primary, 
+                    backgroundColor: colors.primary,
                   },
-                  headerTintColor: "#fff", 
+                  headerTintColor: "#fff",
                   headerTitleStyle: {
                     fontWeight: "bold",
                   },
@@ -2967,13 +2746,10 @@ function AppContent() {
 }
 
 export default function App() {
-  
   if (!__DEV__) {
     try {
       configureForProduction();
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
   return (
@@ -3058,7 +2834,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.2,
   },
-  
+
   sidebarLogoImage: {
     width: 24,
     height: 24,
@@ -3163,7 +2939,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 14,
     marginLeft: 12,
-    
+
     ...Platform.select({
       web: {
         whiteSpace: "nowrap",
@@ -3204,7 +2980,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     flex: 1,
   },
-  
+
   devBanner: {
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -3224,7 +3000,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderBottomWidth: 1,
     minHeight: 70,
-    
+
     ...(Platform.OS === "web"
       ? ({ position: "sticky" as "sticky", top: 0, zIndex: 10002 } as any)
       : { position: "relative", zIndex: 1001 }),
@@ -3319,7 +3095,7 @@ const styles = StyleSheet.create({
   headerRightContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingRight: Platform.OS === "web" ? 0 : 16, 
+    paddingRight: Platform.OS === "web" ? 0 : 16,
   },
   headerButton: {
     marginRight: Platform.OS === "web" ? 15 : 8,
@@ -3333,7 +3109,7 @@ const styles = StyleSheet.create({
     paddingRight: 8,
     justifyContent: "center",
   },
-  
+
   headerAvatarImage: {
     width: 32,
     height: 32,

@@ -1,4 +1,3 @@
-
 import { supabase } from "../config/supabase";
 import { detectUserKeyInTable } from "../utils/supabaseHelper";
 import { notificationService } from "./notificationService";
@@ -30,14 +29,14 @@ export interface Curso {
   instructor?: string;
   id_instructor?: number;
   duracion_horas?: number;
-  duracion?: number; 
-  activo?: boolean; 
+  duracion?: number;
+  activo?: boolean;
   activo_boolean?: boolean;
   contenido_multimedia?: any[];
   categorias?: Categoria;
   inscrito?: boolean;
   progreso?: number;
-  
+
   inscripcionEstado?: string;
   created_at?: string;
   fecha_creacion?: string;
@@ -59,7 +58,7 @@ export interface Modulo {
   completado?: boolean;
   contenido_url?: string;
   created_at: string;
-  
+
   contenidos?: any[];
   lessons?: number;
   completedLessons?: number;
@@ -69,8 +68,6 @@ const supabaseConfigured = !!(
   (AppConfig.supabase?.url && AppConfig.supabase?.anonKey) ||
   (SUPABASE_CONFIG?.URL && SUPABASE_CONFIG?.ANON_KEY)
 );
-if (!supabaseConfigured)
-  
 
 const validatedCourseCols: Record<string, boolean> = {};
 const validatedUserCols: Record<string, boolean> = {};
@@ -81,10 +78,9 @@ async function columnExists(
   cache: Record<string, boolean>,
 ): Promise<boolean> {
   if (!table || !column) return false;
-  
+
   if (cache[column] !== undefined) return cache[column];
 
-  
   try {
     const persisted = await offlineCacheService.get<Record<string, boolean>>(
       "progress",
@@ -94,16 +90,13 @@ async function columnExists(
       Object.assign(cache, persisted.data);
       if (cache[column] !== undefined) return cache[column];
     }
-  } catch (err) {
-    
-  }
+  } catch (err) {}
 
   try {
-    
     const probe = await supabase.from(table).select(column).limit(1);
     if ((probe as any)?.error) {
       const msg = String((probe as any).error?.message || "").toLowerCase();
-      
+
       if (
         msg.includes("column") ||
         msg.includes("does not exist") ||
@@ -112,33 +105,25 @@ async function columnExists(
         cache[column] = false;
         try {
           await offlineCacheService.set("progress", cache, table);
-        } catch (e) {
-          
-        }
+        } catch (e) {}
         return false;
       }
-      
+
       return false;
     }
     cache[column] = true;
     try {
       await offlineCacheService.set("progress", cache, table);
-    } catch (e) {
-      
-    }
+    } catch (e) {}
     return true;
   } catch (e) {
-    
     return false;
   }
 }
 
 export const categoryService = {
-  
   async getCategorias(options?: CacheOptions): Promise<Categoria[]> {
-    
     if (AppConfig.useMockData) {
-      
       return [
         {
           id: "1",
@@ -217,7 +202,6 @@ export const categoryService = {
             orden: cat.orden || 0,
           }));
         } catch (error: any) {
-          
           return [];
         }
       },
@@ -258,7 +242,6 @@ export const categoryService = {
         activo: data.activo !== false,
       };
     } catch (error) {
-      
       throw error;
     }
   },
@@ -290,14 +273,12 @@ export const categoryService = {
         activo: data.activo !== false,
       };
     } catch (error) {
-      
       throw error;
     }
   },
 
   async deleteCategoria(id: string | number): Promise<boolean> {
     try {
-      
       const { error } = await supabase
         .from("categorias")
         .update({ deleted_at: new Date().toISOString() })
@@ -306,25 +287,18 @@ export const categoryService = {
       if (error) throw error;
       return true;
     } catch (error) {
-      
       throw error;
     }
   },
 
-  
   async getCursoById(cursoId: string): Promise<Curso | null> {
     try {
-      
       if (!supabaseConfigured) {
-        
         return null;
       }
 
-      
-      
       let data: any = null;
-      
-      
+
       try {
         const filters: string[] = [];
         if (await columnExists("cursos", "id", validatedCourseCols))
@@ -335,8 +309,7 @@ export const categoryService = {
         if (filters.length > 0) {
           let res: any;
           if (filters.length === 1) {
-            
-            const part = filters[0]; 
+            const part = filters[0];
             const parts = part.split(".eq.");
             if (parts.length === 2) {
               const col = parts[0];
@@ -350,7 +323,6 @@ export const categoryService = {
                 .is("deleted_at", null)
                 .maybeSingle();
             } else {
-              
               res = await supabase
                 .from("cursos")
                 .select(
@@ -372,7 +344,6 @@ export const categoryService = {
           if (res.error) throw res.error;
           data = res.data;
         } else {
-          
           const res = await supabase
             .from("cursos")
             .select(
@@ -385,7 +356,7 @@ export const categoryService = {
         }
       } catch (err: any) {
         const msg = String(err?.message || "").toLowerCase();
-        
+
         if (
           err?.code === "PGRST116" ||
           err?.code === "PGRST205" ||
@@ -395,7 +366,6 @@ export const categoryService = {
           err?.code === "42703"
         ) {
           try {
-            
             if (await columnExists("cursos", "id_curso", validatedCourseCols)) {
               const fallback = await supabase
                 .from("cursos")
@@ -405,7 +375,6 @@ export const categoryService = {
               if (fallback.error) throw fallback.error;
               data = fallback.data;
             } else {
-              
               const probe = await supabase.from("cursos").select("*").limit(10);
               if (probe.error) throw probe.error;
               const found = (probe.data || []).find(
@@ -420,7 +389,6 @@ export const categoryService = {
               data.categorias = { nombre: data.categoria || "" };
           } catch (fbErr: any) {
             if (fbErr?.code === "PGRST116" || fbErr?.code === "PGRST205") {
-              
               return null;
             }
             throw fbErr;
@@ -430,11 +398,8 @@ export const categoryService = {
         }
       }
 
-      
       try {
         if (data && data.id_instructor) {
-          
-          
           const instCheck = await supabase
             .from("usuarios")
             .select(
@@ -447,49 +412,37 @@ export const categoryService = {
             data.instructor =
               `${u.nombre || ""} ${u.apellido_paterno || ""} ${u.apellido_materno || ""}`.trim();
           } else if (instCheck.error) {
-            
-            
             data.instructor = "";
           } else {
-            
             data.instructor = "";
           }
         } else {
-          
           data.instructor = "";
         }
 
-        
         if (data?.usuarios) {
           delete data.usuarios;
         }
       } catch (instErr) {
-        
         data.instructor = "";
       }
 
       return data;
     } catch (error: any) {
-      
       return null;
     }
   },
 
-  
   async getModulosByCurso(
     cursoId: string,
     usuarioId?: string,
   ): Promise<Modulo[]> {
     try {
-      
       if (!supabaseConfigured) {
-        
         return [] as Modulo[];
       }
 
-      
-      ,
-      );
+      // Log removed
       const { data, error } = await supabase
         .from("modulos")
         .select("*")
@@ -498,31 +451,22 @@ export const categoryService = {
         .order("orden", { ascending: true });
 
       if (data) {
-        
       } else {
-        
       }
 
       if (error) {
-        
         if (error.code === "PGRST116" || error.code === "PGRST205") {
-          
           return [];
         }
         throw error;
       }
 
-      
       if ((!data || (Array.isArray(data) && data.length === 0)) && __DEV__) {
         try {
           const probe = await supabase.from("modulos").select("*").limit(5);
-        } catch (probeErr) {
-          
-        }
+        } catch (probeErr) {}
       }
 
-      
-      
       if (!data || (Array.isArray(data) && data.length === 0)) {
         try {
           try {
@@ -549,15 +493,10 @@ export const categoryService = {
                 return mapped;
               }
             }
-          } catch (metaErr) {
-            
-          }
-        } catch (metaErr) {
-          
-        }
+          } catch (metaErr) {}
+        } catch (metaErr) {}
       }
 
-      
       if (data && Array.isArray(data) && data.length > 0) {
         try {
           const moduleIds = Array.from(
@@ -577,18 +516,15 @@ export const categoryService = {
                 .is("deleted_at", null)
                 .order("orden", { ascending: true });
 
-            
             let progresoMap = new Map<number, any>();
             if (usuarioId) {
               try {
-                
                 let empleadoId: number | null = null;
                 const numericUserId = Number(usuarioId);
 
                 if (Number.isInteger(numericUserId) && numericUserId > 0) {
                   empleadoId = numericUserId;
                 } else {
-                  
                   const isUuid =
                     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
                       usuarioId,
@@ -625,9 +561,7 @@ export const categoryService = {
                     }
                   }
                 }
-              } catch (progresoErr) {
-                
-              }
+              } catch (progresoErr) {}
             }
 
             if (!contenidosErr && Array.isArray(contenidosData)) {
@@ -655,54 +589,42 @@ export const categoryService = {
                 map.set(key, list);
               });
 
-              
               (data as any[]).forEach((m: any) => {
                 const key = Number(m.id_modulo || m.id);
                 const items = map.get(key) || [];
                 m.contenidos = items;
                 m.lessons = items.length;
-                
+
                 m.completedLessons = items.filter(
                   (item: any) => item.completado,
                 ).length;
               });
             }
           }
-        } catch (e) {
-          
-        }
+        } catch (e) {}
       }
 
       return data || [];
     } catch (error: any) {
-      
       return [];
     }
   },
 
-  
   async getCursoProgress(
     cursoId: string,
     usuarioId: string,
   ): Promise<{ progreso: number } | null> {
     try {
-      
       if (!supabaseConfigured) {
-        
         return { progreso: 0 };
       }
 
-      
-
-      
-      
       let empleadoId: number | null = null;
       const numericUserId = Number(usuarioId);
 
       if (Number.isInteger(numericUserId) && numericUserId > 0) {
         empleadoId = numericUserId;
       } else {
-        
         const isUuid =
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
             usuarioId,
@@ -717,7 +639,6 @@ export const categoryService = {
             empleadoId = user.id_usuario;
           }
         } else {
-          
           let user = null;
           const { data: userByEmpleado } = await supabase
             .from("usuarios")
@@ -743,17 +664,14 @@ export const categoryService = {
       }
 
       if (!empleadoId) {
-        
         return null;
       }
 
       const cursoIdNum = Number(cursoId);
       if (!Number.isInteger(cursoIdNum) || cursoIdNum <= 0) {
-        
         return null;
       }
 
-      
       const { data, error } = await supabase
         .from("inscripciones")
         .select(
@@ -765,7 +683,6 @@ export const categoryService = {
         .maybeSingle();
 
       if (error) {
-        
         return null;
       }
 
@@ -774,27 +691,20 @@ export const categoryService = {
       }
       return data;
     } catch (error: any) {
-      
       return null;
     }
   },
 
-  
   async markModuleCompleted(
     usuarioId: string,
     cursoId: string,
     moduloId: string,
   ): Promise<void> {
     try {
-      
       if (!supabaseConfigured) {
-        
         return;
       }
 
-      
-
-      
       const { error } = await supabase.from("modulos_completados").insert({
         usuario_id: usuarioId,
         curso_id: cursoId,
@@ -803,32 +713,23 @@ export const categoryService = {
       });
 
       if (error) throw error;
-
-      
     } catch (error: any) {
-      
       throw error;
     }
   },
 
-  
   async getModulosCompletados(
     usuarioId: string,
     cursoId: string,
   ): Promise<any[]> {
     try {
-      
       if (!supabaseConfigured) {
-        
         return [];
       }
 
-      
-
-      
       const userKeys = ["usuario_id", "id_empleado", "id_usuario", "user_id"];
       const courseKeys = ["curso_id", "id_curso", "cursoId", "id"];
-      
+
       const validUserKeys: string[] = [];
       const validCourseKeys: string[] = [];
       for (const uKey of userKeys) {
@@ -860,7 +761,6 @@ export const categoryService = {
                 error.code === "42703" ||
                 (error as any)?.status === 400
               ) {
-                
                 validatedUserCols[uKey] =
                   validatedUserCols[uKey] ?? !msg.includes("column");
                 validatedCourseCols[cKey] =
@@ -885,23 +785,15 @@ export const categoryService = {
       if (lastError) throw lastError;
       return [];
     } catch (error: any) {
-      
       return [];
     }
   },
 
-  
   async getCursosPorCategoria(categoriaId?: string): Promise<Curso[]> {
-    
     if (!supabaseConfigured) {
-      
       return [];
     }
 
-    
-
-    
-    
     try {
       let query = supabase
         .from("cursos")
@@ -911,7 +803,6 @@ export const categoryService = {
         .is("deleted_at", null);
 
       if (categoriaId) {
-        
         query = query.or(
           `categoria_id.eq.${categoriaId},categoria.eq.${categoriaId}`,
         );
@@ -919,7 +810,6 @@ export const categoryService = {
       const { data, error } = await query.order("titulo");
       if (error) throw error;
 
-      
       return (data || []).map((curso) => {
         if (curso.usuarios) {
           const u = curso.usuarios as any;
@@ -937,7 +827,6 @@ export const categoryService = {
         msg.includes("relation") ||
         msg.includes("categorias")
       ) {
-        
         try {
           let q = supabase.from("cursos").select("*");
           if (categoriaId) {
@@ -956,18 +845,8 @@ export const categoryService = {
     }
   },
 
-  
   async getCursosDisponibles(usuarioId: string): Promise<Curso[]> {
-    ),
-      esUUID:
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          usuarioId,
-        ),
-    });
-
-    
     if (AppConfig.useMockData) {
-      
       const { mockDataService } = await import("./mockDataService");
       const mockCourses = await mockDataService.getCourses();
 
@@ -988,13 +867,10 @@ export const categoryService = {
       }));
     }
 
-    
     if (!supabaseConfigured) {
-      
       return [] as Curso[];
     }
 
-    
     try {
       if (usuarioId === "admin") {
         try {
@@ -1007,7 +883,6 @@ export const categoryService = {
             .order("titulo");
           if (error) throw error;
 
-          
           return (cursos || []).map((curso) => {
             if (curso.usuarios) {
               const u = curso.usuarios as any;
@@ -1029,7 +904,6 @@ export const categoryService = {
             msg.includes("relation") ||
             msg.includes("categorias")
           ) {
-            
             const { data: cursos, error } = await supabase
               .from("cursos")
               .select("*")
@@ -1041,11 +915,9 @@ export const categoryService = {
         }
       }
 
-      
       let inscripciones: any = null;
       let errorInscripciones: any = null;
 
-      
       let empleadoId: number | null = null;
       if (usuarioId) {
         const numericUserId = Number(usuarioId);
@@ -1066,10 +938,8 @@ export const categoryService = {
               if (u) {
                 empleadoId = u.id_usuario;
               } else {
-                
               }
             } else {
-              
               let u = null;
               const { data: uByEmpleado } = await supabase
                 .from("usuarios")
@@ -1089,18 +959,13 @@ export const categoryService = {
                   u = uByControl;
                   empleadoId = u.id_usuario;
                 } else {
-                  
                 }
               }
             }
-          } catch (e) {
-            
-            
-          }
+          } catch (e) {}
         }
       }
 
-      
       const numericUserKeys = ["id_empleado", "id_usuario"];
       const stringUserKeys = ["usuario_id", "user_id"];
       if (usuarioId) {
@@ -1112,7 +977,6 @@ export const categoryService = {
                 .select("id_curso, progreso")
                 .eq(u, empleadoId);
               if (!res.error) {
-                
                 inscripciones = (res.data || []).map((r: any) => ({
                   curso_id: r.id_curso ?? r.curso_id,
                   id_curso: r.id_curso ?? r.curso_id,
@@ -1122,7 +986,7 @@ export const categoryService = {
                 break;
               }
               errorInscripciones = res.error;
-              
+
               if (
                 res.error &&
                 (res.error.code === "42703" ||
@@ -1133,7 +997,7 @@ export const categoryService = {
             } catch (e: any) {
               errorInscripciones = e;
               const msg = String(e?.message || "").toLowerCase();
-              
+
               if (
                 e?.code === "22P02" ||
                 msg.includes("invalid") ||
@@ -1152,7 +1016,6 @@ export const categoryService = {
             }
           }
         } else {
-          
           for (const u of stringUserKeys.concat(numericUserKeys)) {
             try {
               const res = await supabase
@@ -1160,7 +1023,6 @@ export const categoryService = {
                 .select("id_curso, progreso")
                 .eq(u, usuarioId);
               if (!res.error) {
-                
                 inscripciones = (res.data || []).map((r: any) => ({
                   curso_id: r.id_curso ?? r.curso_id,
                   id_curso: r.id_curso ?? r.curso_id,
@@ -1187,7 +1049,6 @@ export const categoryService = {
                 msg.includes("cannot be cast") ||
                 msg.includes("invalid input")
               ) {
-                
                 continue;
               }
               if (
@@ -1202,10 +1063,6 @@ export const categoryService = {
         }
       }
 
-      
-      
-      
-      
       let inscripcionesData = errorInscripciones ? [] : inscripciones || [];
 
       if (
@@ -1213,7 +1070,6 @@ export const categoryService = {
         errorInscripciones
       ) {
         try {
-          
           const candidateKeys = [
             "id_empleado",
             "id_usuario",
@@ -1226,7 +1082,6 @@ export const categoryService = {
           );
 
           if (foundKey) {
-            
             const selectVariants = [
               "curso_id, progreso, estado",
               "id_curso, progreso, estado",
@@ -1240,7 +1095,6 @@ export const categoryService = {
                   .select(sel)
                   .eq(foundKey, usuarioId);
                 if (!insErr && Array.isArray(insRes)) {
-                  
                   inscripcionesData = insRes.map((r: any) => ({
                     curso_id: r.curso_id ?? r.id_curso ?? r.id ?? r.cursoId,
                     progreso: r.progreso ?? r.progress ?? 0,
@@ -1250,17 +1104,12 @@ export const categoryService = {
                   success = true;
                   break;
                 } else {
-                  
                 }
-              } catch (e: any) {
-                
-              }
+              } catch (e: any) {}
             }
 
             if (!success) {
-              
               try {
-                
                 const numericKeyNames = ["id_empleado", "id_usuario"];
                 const isUuid =
                   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -1276,15 +1125,11 @@ export const categoryService = {
                       .eq("auth_id", usuarioId)
                       .maybeSingle();
                     if (resolved && resolved.id_usuario) {
-                      
                       usuarioId = String(resolved.id_usuario);
                     } else {
-                      
-                      
                       keyToUse = null;
                     }
                   } catch (e) {
-                    
                     keyToUse = null;
                   }
                 }
@@ -1303,32 +1148,21 @@ export const categoryService = {
                     }));
                     errorInscripciones = null;
                   } else {
-                     failed",
-                      allErr,
-                    );
+                    // Log removed
                   }
                 } else {
-                  
                 }
               } catch (e: any) {
-                 threw",
-                  e?.message || e,
-                );
+                // Log removed
               }
             }
           } else {
-            
           }
-        } catch (e: any) {
-          
-        }
+        } catch (e: any) {}
       }
 
-      
-      
       let cursos: any = [];
       try {
-        
         const { data, error } = await supabase
           .from("cursos")
           .select(
@@ -1340,14 +1174,12 @@ export const categoryService = {
         if (error) throw error;
         cursos = data || [];
       } catch (err: any) {
-        
         const msg = String(err?.message || "").toLowerCase();
         if (
           err?.code === "PGRST116" ||
           msg.includes("relation") ||
           msg.includes("usuarios")
         ) {
-          
           const { data, error } = await supabase
             .from("cursos")
             .select("*")
@@ -1356,7 +1188,6 @@ export const categoryService = {
           if (error) throw error;
           cursos = data || [];
         } else {
-          
           throw err;
         }
       }
@@ -1369,19 +1200,17 @@ export const categoryService = {
             i.id_curso === curso.id ||
             i.id_curso === curso.id_curso,
         );
-        
+
         const normalizedId = curso.id_curso || curso.id;
-        
+
         const catRel = curso.categorias;
         const categoriaNombre =
           catRel?.nombre || curso.categoria || "Sin categoría";
 
-        
         const realCatId = curso.id_categoria;
         const derivedCatId = `cat_${String(categoriaNombre).toLowerCase().replace(/\s+/g, "_")}`;
         const finalCatId = realCatId || derivedCatId;
 
-        
         let instructorName = curso.instructor || "";
         if (curso.usuarios) {
           const u = curso.usuarios as any;
@@ -1398,13 +1227,13 @@ export const categoryService = {
           duracion: curso.duracion,
           categoria: categoriaNombre,
           categoria_id: finalCatId,
-          id_categoria: realCatId, 
+          id_categoria: realCatId,
           categorias: { nombre: categoriaNombre },
           imagen: curso.imagen_url || curso.imagen,
           instructor: instructorName,
           progreso: inscripcion ? inscripcion.progreso || 0 : 0,
           inscrito: !!inscripcion,
-          
+
           inscripcionEstado: inscripcion
             ? inscripcion.estado || undefined
             : undefined,
@@ -1412,30 +1241,24 @@ export const categoryService = {
         };
       });
     } catch (error: any) {
-      
       return [];
     }
   },
 
-  
   async inscribirEnCurso(usuarioId: string, cursoId: string): Promise<any> {
     try {
-      
       let empleadoId: number | null = null;
 
-      
       const numericId = Number(usuarioId);
       if (Number.isInteger(numericId) && numericId > 0) {
         empleadoId = numericId;
       } else {
-        
         const isUuid =
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
             usuarioId,
           );
 
         if (isUuid) {
-          
           const { data: usuario, error: usuarioError } = await supabase
             .from("usuarios")
             .select("id_usuario")
@@ -1443,12 +1266,10 @@ export const categoryService = {
             .maybeSingle();
 
           if (usuarioError) {
-            
             throw new Error("Error al buscar usuario en la base de datos");
           }
 
           if (!usuario) {
-            
             throw new Error(
               "Usuario no encontrado. Asegúrate de tener un perfil creado.",
             );
@@ -1456,7 +1277,6 @@ export const categoryService = {
 
           empleadoId = usuario.id_usuario;
         } else {
-          
           let usuario = null;
           let usuarioError = null;
           try {
@@ -1484,12 +1304,10 @@ export const categoryService = {
           }
 
           if (usuarioError) {
-            
             throw new Error("Error al buscar usuario");
           }
 
           if (!usuario) {
-            
             throw new Error(
               "Usuario no encontrado. Verifica tu número de empleado o número de control.",
             );
@@ -1503,14 +1321,11 @@ export const categoryService = {
         throw new Error("No se pudo resolver el ID del usuario");
       }
 
-      
       const cursoIdNum = Number(cursoId);
       if (!Number.isInteger(cursoIdNum) || cursoIdNum <= 0) {
-        
         throw new Error("ID de curso inválido");
       }
 
-      
       const { data: cursoData, error: cursoError } = await supabase
         .from("cursos")
         .select("fecha_fin, titulo")
@@ -1519,16 +1334,13 @@ export const categoryService = {
         .single();
 
       if (cursoError) {
-        
         throw new Error("No se pudo verificar la información del curso");
       }
 
       if (!cursoData) {
-        
         throw new Error("Curso no encontrado");
       }
 
-      
       if (cursoData.fecha_fin) {
         const now = new Date();
         const fechaFin = new Date(cursoData.fecha_fin);
@@ -1539,14 +1351,13 @@ export const categoryService = {
             month: "long",
             day: "numeric",
           });
-          
+
           throw new Error(
             `Este curso venció el ${fechaFormateada} y ya no está disponible para inscripciones.`,
           );
         }
       }
 
-      
       const { data: existente, error: checkError } = await supabase
         .from("inscripciones")
         .select("id_inscripcion, estado, progreso")
@@ -1556,7 +1367,6 @@ export const categoryService = {
         .maybeSingle();
 
       if (checkError) {
-        
         throw checkError;
       }
 
@@ -1569,7 +1379,6 @@ export const categoryService = {
         };
       }
 
-      
       const { data, error } = await supabase
         .from("inscripciones")
         .insert({
@@ -1582,35 +1391,24 @@ export const categoryService = {
         .single();
 
       if (error) {
-        
         if (error.code === "23505") {
-          ",
-            error,
-          );
+          // Log removed
           return { alreadyEnrolled: true };
         }
 
-        
         throw error;
       }
       return data;
     } catch (error) {
-      
       throw error;
     }
   },
 
-  
   async getCursosCompletados(): Promise<any[]> {
-    
-    
     if (!supabaseConfigured) {
-      
       return [];
     }
-    
 
-    
     const { data, error } = await supabase
       .from("completaciones_cursos")
       .select(
@@ -1627,13 +1425,12 @@ export const categoryService = {
         (error.message && error.message.toLowerCase().includes("relation")) ||
         (error.message && error.message.toLowerCase().includes("categorias"))
       ) {
-        
         const { data: completaciones, error: compleError } = await supabase
           .from("completaciones_cursos")
           .select("*")
           .order("fecha_completacion", { ascending: false });
         if (compleError) throw compleError;
-        
+
         const enriched = await Promise.all(
           (completaciones || []).map(async (comp: any) => {
             const cursoData = await this.getCursoById(String(comp.curso_id));
@@ -1647,69 +1444,48 @@ export const categoryService = {
     return data || [];
   },
 
-  
   async marcarCursoCompletado(
     usuarioId: string,
     cursoId: string,
     progreso: number,
   ): Promise<void> {
     try {
-      
-
-      
       const inscripcion = await this.getInscripcion(usuarioId, cursoId);
 
       if (inscripcion?.fecha_completado) {
-        
         const completadoHaceMin =
           (Date.now() - new Date(inscripcion.fecha_completado).getTime()) /
           1000 /
           60;
         if (completadoHaceMin > 1) {
-          ,
-            "minutos. No enviar email duplicado.",
-          );
+          // Log removed
           return;
         }
       }
 
-      
-      
-      
       const usuarioResponse = await supabase
         .from("usuarios")
         .select("*")
         .eq("id_usuario", usuarioId)
         .single();
       if (usuarioResponse.error) {
-        
         throw usuarioResponse.error;
       }
-      
 
       const cursoData = await this.getCursoById(String(cursoId));
       if (!cursoData) {
-        
         throw new Error("Curso no encontrado");
       }
-      
 
-      
-      
       try {
         const u = usuarioResponse.data;
-        
+
         const userName =
           `${u.nombre || ""} ${u.apellido_paterno || ""} ${u.apellido_materno || ""}`.trim() ||
           u.email ||
           "Usuario";
 
-        ,
-            courseId: Number(cursoId),
-            courseTitle: cursoData.titulo,
-            userName,
-          },
-        );
+        // Log removed
 
         await notificationService.notifyCourseCompletion({
           userId: String(u.id || u.id_usuario),
@@ -1717,10 +1493,7 @@ export const categoryService = {
           courseTitle: cursoData.titulo || "Curso sin título",
           userName: userName,
         });
-        
 
-        
-        
         await notificationService.notifyCertificateIssued({
           usuario: usuarioResponse.data,
           curso: {
@@ -1728,56 +1501,42 @@ export const categoryService = {
             categorias: cursoData?.categorias,
           },
         });
-      } catch (notificationError) {
-        
-        
-      }
+      } catch (notificationError) {}
     } catch (error) {
-      
       throw error;
     }
   },
 
-  
   async syncCourseProgress(
     usuarioId: string,
     cursoId: string,
   ): Promise<number> {
     try {
-      
-      
       const inscripcion = await this.getInscripcion(usuarioId, cursoId);
 
       if (!inscripcion) {
-        
         return 0;
       }
 
       const progreso = inscripcion.progreso || 0;
-      
 
-      
       if (progreso >= 100) {
-        
         await this.marcarCursoCompletado(usuarioId, cursoId, progreso);
       }
 
       return progreso;
     } catch (error) {
-      
       return 0;
     }
   },
 
-  
   async actualizarProgresoCurso(
     usuarioId: string,
     cursoId: string,
     progreso: number,
   ): Promise<void> {
-    
     const userKeys = ["id_empleado", "id_usuario", "usuario_id", "user_id"];
-    
+
     const courseKeys = ["id_curso", "curso_id", "cursoId", "id"];
     let lastErr: any = null;
     outer_progress: for (const cKey of courseKeys) {
@@ -1821,7 +1580,7 @@ export const categoryService = {
                 continue;
               throw resp2.error;
             }
-            
+
             break outer_progress;
           }
           if (ue) {
@@ -1843,13 +1602,11 @@ export const categoryService = {
     }
     if (lastErr) throw lastErr;
 
-    
     if (progreso >= 100) {
       await this.marcarCursoCompletado(usuarioId, cursoId, progreso);
     }
   },
 
-  
   async getInscripcion(usuarioId: string, cursoId: string): Promise<any> {
     const userKeys = ["usuario_id", "id_empleado", "id_usuario", "user_id"];
     const courseKeys = ["curso_id", "id_curso", "cursoId", "id"];
@@ -1866,10 +1623,7 @@ export const categoryService = {
           if (error) {
             lastError = error;
             const msg = String(error?.message || "").toLowerCase();
-            ?.status,
-              message: error?.message,
-              details: (error as any)?.details || null,
-            });
+            // Log removed
             if (error.code === "PGRST116" || error.code === "PGRST205")
               return null;
             if (
@@ -1910,7 +1664,6 @@ export const categoryService = {
     return null;
   },
 
-  
   async getEstadisticasCursos(): Promise<any> {
     const { data: cursosData, error: cursosError } = await supabase
       .from("cursos")
@@ -1918,7 +1671,6 @@ export const categoryService = {
 
     if (cursosError) throw cursosError;
 
-    
     let inscripcionesData: any = null;
     let inscripcionesError: any = null;
     try {
@@ -1936,7 +1688,6 @@ export const categoryService = {
         (inscripcionesError.message &&
           inscripcionesError.message.toLowerCase().includes("column")))
     ) {
-      
       try {
         const r2 = await supabase
           .from("inscripciones")
@@ -1970,27 +1721,20 @@ export const categoryService = {
     };
   },
 
-  
   async getCompletionsForCourse(cursoId: string): Promise<any[]> {
     try {
-      
-
       const courseKeys = ["id_curso", "curso_id", "cursoId", "id"];
       let inscripciones: any[] = [];
       let success = false;
 
-      
       for (const key of courseKeys) {
         try {
-          
           const { data, error } = await supabase
             .from("inscripciones")
             .select("*")
             .eq(key, cursoId);
 
           if (!error && data) {
-            
-            
             inscripciones = data.filter((r: any) => {
               const p = r.progreso || r.progress || 0;
               return (
@@ -2001,25 +1745,19 @@ export const categoryService = {
               );
             });
             if (inscripciones.length > 0) {
-              
               success = true;
               break;
             }
           }
-        } catch (e) {
-          
-        }
+        } catch (e) {}
       }
 
       if (!success && inscripciones.length === 0) {
-        
         return [];
       }
 
-      
       const enriched = await Promise.all(
         inscripciones.map(async (r: any) => {
-          
           const userId =
             r.id_empleado || r.usuario_id || r.id_usuario || r.user_id;
 
@@ -2027,7 +1765,7 @@ export const categoryService = {
 
           try {
             let u: any = null;
-            
+
             const { data: uData, error: uErr } = await supabase
               .from("usuarios")
               .select(
@@ -2043,8 +1781,7 @@ export const categoryService = {
                 numero_empleado: uData.numero_control,
               };
             } else {
-              
-              const isUuid = String(userId).length > 30; 
+              const isUuid = String(userId).length > 30;
               if (isUuid) {
                 const { data: uAuth } = await supabase
                   .from("usuarios")
@@ -2062,7 +1799,6 @@ export const categoryService = {
             }
 
             if (!u) {
-              
               const { data: uId } = await supabase
                 .from("usuarios")
                 .select("*")
@@ -2086,18 +1822,15 @@ export const categoryService = {
               usuario: u,
             };
           } catch (err) {
-            
             return null;
           }
         }),
       );
 
-      
       const final = enriched.filter((item) => item && item.usuario);
-      
+
       return final;
     } catch (err) {
-      
       return [];
     }
   },

@@ -1,4 +1,3 @@
-
 import React, {
   createContext,
   useContext,
@@ -15,8 +14,8 @@ import { AppConfig } from "../config/appConfig";
 import { mockDataService } from "../services/mockDataService";
 
 export interface User {
-  id: string; 
-  id_usuario?: number; 
+  id: string;
+  id_usuario?: number;
   email: string;
   nombre?: string;
   apellidoPaterno?: string;
@@ -26,7 +25,7 @@ export interface User {
   telefono?: string;
   numeroEmpleado?: string;
   puesto?: string;
-  avatar_path?: string | null; 
+  avatar_path?: string | null;
 }
 
 export interface AuthContextType {
@@ -35,7 +34,7 @@ export interface AuthContextType {
     user: User | null;
     loading: boolean;
     error: string | null;
-    
+
     isRecoverySession?: boolean;
   };
   user?: User | null;
@@ -71,7 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const checkSession = async () => {
-      
       if (AppConfig.useMockData) {
         try {
           const mockUserId = await AsyncStorage.getItem("mock_user_id");
@@ -107,14 +105,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
           setState((prev) => ({ ...prev, loading: false }));
         } catch (error) {
-          
           setState((prev) => ({ ...prev, loading: false }));
         }
         return;
       }
 
-      
-      
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Session check timeout")), 8000),
       );
@@ -128,7 +123,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 error,
               } = await supabase.auth.getSession();
 
-              
               if (error) {
                 const isTokenError =
                   error.message?.includes("refresh_token_not_found") ||
@@ -136,12 +130,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                   error.message?.includes("Not logged in");
 
                 if (isTokenError) {
-                  
                   await AsyncStorage.removeItem("auth_token");
                   await AsyncStorage.removeItem("flut-app-supabase-auth");
                   await AsyncStorage.removeItem("supabase.auth.token");
 
-                  
                   try {
                     const keys = await AsyncStorage.getAllKeys();
                     const sbKeys = keys.filter((k) => k.startsWith("sb-"));
@@ -174,7 +166,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 )
                   throw userError;
 
-                
                 let recoveryFlag = false;
                 try {
                   if (typeof window !== "undefined")
@@ -214,7 +205,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           timeoutPromise,
         ]);
       } catch (error: any) {
-        
         await AsyncStorage.removeItem("auth_token");
         await AsyncStorage.removeItem("flut-app-supabase-auth");
         await AsyncStorage.removeItem("supabase.auth.token");
@@ -237,13 +227,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     checkSession();
 
-    
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
         if (event === "SIGNED_OUT") {
-          
           try {
             if (typeof window !== "undefined")
               window.localStorage.removeItem("recovery_session");
@@ -261,7 +249,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (event === "TOKEN_REFRESHED" && session) {
       }
 
-      
       if (event === "SIGNED_OUT" && !session) {
         await AsyncStorage.removeItem("auth_token");
         await AsyncStorage.removeItem("flut-app-supabase-auth");
@@ -291,7 +278,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         let userData: any = null;
         let userError: any = null;
 
-        
         const tryQuery = async (field: string, value: string) => {
           try {
             const res = await supabase
@@ -306,7 +292,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         };
 
-        
         const variants = Array.from(
           new Set([
             rawId,
@@ -318,7 +303,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         for (const v of variants) {
           try {
-            
             const res = await supabase
               .from("usuarios")
               .select("correo, auth_id, numero_control, numero_empleado")
@@ -328,18 +312,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               userData = res.data;
               break;
             }
-          } catch (e) {
-            
-          }
+          } catch (e) {}
         }
 
-        
         if (!userData) {
           for (const v of variants) {
             const patternExact = v;
             const patternPartial = `%${v}%`;
             try {
-              
               let res = await supabase
                 .from("usuarios")
                 .select("correo, auth_id, numero_control, numero_empleado")
@@ -360,7 +340,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 break;
               }
 
-              
               res = await supabase
                 .from("usuarios")
                 .select("correo, auth_id, numero_control, numero_empleado")
@@ -380,21 +359,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 userData = res.data;
                 break;
               }
-            } catch (e) {
-              
-            }
+            } catch (e) {}
           }
         }
 
         if (!userData) {
-          
           throw new Error(
             "Número de empleado o control no encontrado. Si crees que es un error, contacta al administrador.",
           );
         }
 
         if (!userData.correo) {
-          
           throw new Error(
             "Usuario encontrado pero sin correo asociado. Contacta al administrador.",
           );
@@ -405,7 +380,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         });
 
         if (error) {
-          
           if (
             error.message.includes("Invalid login credentials") ||
             error.message.includes("Invalid") ||
@@ -449,16 +423,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
           await AsyncStorage.setItem("auth_token", data.session.access_token);
 
-          
           if (completeUserData?.id_usuario) {
             try {
               await supabase
                 .from("usuarios")
                 .update({ ultimo_acceso: new Date().toISOString() })
                 .eq("id_usuario", completeUserData.id_usuario);
-            } catch (err) {
-              
-            }
+            } catch (err) {}
           }
         }
       } catch (error: any) {
@@ -477,10 +448,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      
       if (AppConfig.useMockData) {
-        
-
         const { user: mockUser, error: mockError } =
           await mockDataService.login(email, password);
 
@@ -488,7 +456,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           throw new Error(mockError || "Credenciales inválidas");
         }
 
-        
         setState((prev) => ({
           ...prev,
           isAuthenticated: true,
@@ -509,16 +476,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           loading: false,
         }));
 
-        
         await AsyncStorage.setItem("mock_user_id", String(mockUser.id));
         await AsyncStorage.setItem("auth_token", "mock_token_" + mockUser.id);
 
-        
         return;
       }
 
-      
-      
       let authEmail = email;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
@@ -547,7 +510,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         if (userError || !userData) {
-          
           throw new Error("Usuario no encontrado con ese identificador");
         }
 
@@ -560,7 +522,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (error) {
-        
         if (
           error.message.includes("Invalid login credentials") ||
           error.message.includes("Invalid") ||
@@ -583,7 +544,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           userError.code !== "PGRST116" &&
           userError.code !== "PGRST205"
         ) {
-          
           throw userError;
         }
 
@@ -609,19 +569,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         await AsyncStorage.setItem("auth_token", data.session.access_token);
 
-        
         if (userData?.id_usuario) {
           try {
             await supabase
               .from("usuarios")
               .update({ ultimo_acceso: new Date().toISOString() })
               .eq("id_usuario", userData.id_usuario);
-          } catch (err) {
-            
-          }
+          } catch (err) {}
         }
       } else {
-        
       }
     } catch (error: any) {
       setState((prev) => ({
@@ -636,7 +592,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const register = useCallback(async (data: any) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      
       const payload = {
         numeroControl: data.numeroEmpleado,
         nombre: data.nombre,
@@ -651,10 +606,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         confirmarContrasena: data.confirmarContrasena,
       };
 
-      
       const result = await authService.register(payload);
 
-      
       try {
         await notificationService.notifyUserRegistration({
           nombre: data.nombre,
@@ -665,13 +618,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           departamento: data.departamento,
           puesto: data.puesto,
         });
-      } catch (notifyError) {
-        
-      }
-
-      
-      
-      
+      } catch (notifyError) {}
 
       return result;
     } catch (error: any) {
@@ -688,7 +635,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setState((prev) => ({ ...prev, loading: true }));
 
-      
       if (AppConfig.useMockData) {
         await AsyncStorage.removeItem("mock_user_id");
         await AsyncStorage.removeItem("auth_token");
@@ -701,15 +647,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           isRecoverySession: false,
         });
 
-        
         return;
       }
 
-      
-      
       const { error } = await supabase.auth.signOut();
 
-      
       const isSessionError =
         error &&
         (error.message?.includes("session missing") ||
@@ -718,12 +660,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           error.message?.includes("refresh_token_not_found"));
 
       if (error && !isSessionError) {
-        :",
-          error.message,
-        );
+        // Error log removed
       }
 
-      
       await AsyncStorage.removeItem("auth_token");
       await AsyncStorage.removeItem("flut-app-supabase-auth");
       await AsyncStorage.removeItem("supabase.auth.token");
@@ -743,9 +682,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         isRecoverySession: false,
       });
     } catch (error: any) {
-      
-
-      
       await AsyncStorage.removeItem("auth_token");
       await AsyncStorage.removeItem("flut-app-supabase-auth");
       await AsyncStorage.removeItem("supabase.auth.token");
@@ -775,17 +711,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
-        
         if (
           error.message?.includes("refresh_token_not_found") ||
           error.message?.includes("Invalid Refresh Token")
         ) {
-          
           try {
             await logout();
-          } catch (e) {
-            
-          }
+          } catch (e) {}
           return;
         }
         throw error;
@@ -795,7 +727,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         await AsyncStorage.setItem("auth_token", data.session.access_token);
       }
     } catch (error: any) {
-      
       throw error;
     }
   }, [logout]);
