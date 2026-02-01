@@ -1,0 +1,34 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    // Type checking
+    "strict": true,
+    "skipLibCheck": true,
+    
+    // Module resolution
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    
+    // JSX
+    "jsx": "react-jsx",
+    
+    // Interop
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // Types
+    "types": ["react", "node"]
+  },
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*",
+    "archive",
+    "archive/**",
+    "**/*.bak",
+    "build",
+    "dist"
+  ]
+}
